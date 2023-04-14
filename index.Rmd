@@ -1,0 +1,12 @@
+---
+title: "index"
+author: "Vitor Figueira Arueira"
+date: "2023-04-14"
+output: html_document
+---
+
+Socorro
+
+```{r setup}
+
+```
