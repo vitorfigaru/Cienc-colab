@@ -35,3 +35,8 @@ output: html_document
 #### [Rmd](https://github.com/vitorfigaru/Cienc-colab/blob/main/Atividade%20final.Rmd)
 
 #### [script](https://github.com/vitorfigaru/Cienc-colab/blob/main/atv.final.R)
+
+### Resumo do último artigo (On Reproducible AI: Towards Reproducible Research, Open Science, and Digital Scholarship in AI Publications.)
+
+#### [Pdf do resumo](https://github.com/vitorfigaru/Cienc-colab/blob/main/Resumo%20cienc%20colab.pdf)
+
