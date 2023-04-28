@@ -27,3 +27,11 @@ output: html_document
 #### [Rmd](https://github.com/vitorfigaru/Cienc-colab/blob/main/Atividade%203.Rmd)
 
 #### [script](https://github.com/vitorfigaru/Cienc-colab/blob/main/atv3.R)
+
+### Atividade Final
+
+#### [html](https://github.com/vitorfigaru/Cienc-colab/blob/main/Atividade-final.html) 
+
+#### [Rmd](https://github.com/vitorfigaru/Cienc-colab/blob/main/Atividade%20final.Rmd)
+
+#### [script](https://github.com/vitorfigaru/Cienc-colab/blob/main/atv.final.R)
