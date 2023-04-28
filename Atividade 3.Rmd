@@ -16,6 +16,7 @@ library(CoordinateCleaner)
 library(ggmap)
 library(maps)
 library(mapdata)
+library(leaflet)
 ```
 
 ## GBIF
@@ -255,4 +256,53 @@ ggplot() +
 
 ```{csv arq}
 write.csv(all_data, "occ_GBIF-OBIS_par_hepa.csv", row.names = FALSE)
+```
+
+
+### Gráficos interativos
+
+#### Preparando dados
+
+```{r}
+# ocorrencias
+nemo_gbif <- occ_data(scientificName = "Amphiprion ocellaris", 
+                        hasCoordinate = TRUE,
+                        hasGeospatialIssue = FALSE)
+# checar issues
+issues_gbif <- nemo_gbif$data$issues %>% 
+  unique() %>% 
+  strsplit(., "[,]") %>% 
+  unlist()
+
+gbif_issues() %>% 
+  data.frame() %>% 
+  filter(code %in% issues_gbif)
+
+nemo <- nemo_gbif$data %>%
+  dplyr::select(scientificName, decimalLatitude, decimalLongitude) %>% 
+  distinct()
+```
+
+
+#### Plotando mapas
+
+```{r graf int}
+nemo %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  addMarkers(~decimalLongitude,
+             ~decimalLatitude)
+```
+
+```{r int}
+library(plotly)
+nemo %>% 
+  mutate(lat = round(decimalLatitude)) %>% 
+  group_by(lat, scientificName) %>%
+  summarise(occ = length(scientificName)) %>%
+  ggplot(aes(y = occ, x = lat, color = scientificName)) +
+  geom_point() +
+  geom_smooth() +
+  theme_classic() +
+  labs(x = "latitude", y = 'ocorrências')
 ```
