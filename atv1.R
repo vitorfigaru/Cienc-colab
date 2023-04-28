@@ -1,0 +1,121 @@
+#Loading the above R package  - tidyverse  
+library(tidyverse)  
+library(dplyr)
+library(stringr)
+
+setwd("C:/Users/vitor/OneDrive/Área de Trabalho/Faculdade/Materias do mestrado/Ciência colaborativa")
+
+###Dados
+DADOS_H <- read.csv("atividade1_HenriqueSimfrone.csv",header=TRUE, sep=";")
+DADOS_H_R <- data.frame(ETIQUETA = NA, AMOSTRA = DADOS_H$Sample,
+                        SITE = DADOS_H$site,
+                        LATITUDE = DADOS_H$lat, LONGITUDE = DADOS_H$long,
+                        DATA = DADOS_H$day, ESP = DADOS_H$Sp,
+                        SEP_L = DADOS_H$Sepal_Length_cm, SEP_W = DADOS_H$Sepal_Width_cm, 
+                        PET_L = DADOS_H$Petal_Length_cm, PET_W = DADOS_H$Petal_Width_cm)
+
+
+DADOS_J <- read.csv("atividade1_JonathaR.csv",header=TRUE, sep=";")
+DADOS_J_R <- data.frame(ETIQUETA = NA, AMOSTRA = DADOS_J$Ficha,
+                        SITE = DADOS_J$site,
+                        LATITUDE = DADOS_J$latitude, LONGITUDE = DADOS_J$longitude,
+                        DATA = DADOS_J$data, ESP = DADOS_J$spp,
+                        SEP_L = DADOS_J$sepal_lenght..cm., SEP_W = DADOS_J$sepal_widht..cm., 
+                        PET_L = DADOS_J$petal_lenght..cm., PET_W = DADOS_J$petal_width..cm.)
+
+
+DADOS_L <- read.csv("Atividade1_Lorrana.csv",header=FALSE, sep=";")
+DADOS_L <- DADOS_L[-1,]
+
+DADOS_L_R <- data.frame(ETIQUETA = NA, AMOSTRA = DADOS_L$V2,
+                        SITE = DADOS_L$V3,
+                        LATITUDE = DADOS_L$V4, LONGITUDE = DADOS_L$V5,
+                        DATA = DADOS_L$V6, ESP = DADOS_L$V7,
+                        SEP_L = DADOS_L$V8, SEP_W = DADOS_L$V9, 
+                        PET_L = DADOS_L$V10, PET_W = DADOS_L$V11)
+
+
+DADOS_M <- read.csv("atividade1_MARIANA-BURATO.csv",header=TRUE, sep=";")
+DADOS_M_R <- data.frame(ETIQUETA = NA, AMOSTRA = DADOS_M$amostra,
+                        SITE = DADOS_M$site,
+                        LATITUDE = DADOS_M$latitude, LONGITUDE = DADOS_M$longitude,
+                        DATA = DADOS_M$data, ESP = DADOS_M$especies,
+                        SEP_L = DADOS_M$sepal_length_.cm., SEP_W = DADOS_M$sepl_width.cm., 
+                        PET_L = DADOS_M$petal_length_.cm., PET_W = DADOS_M$petal_width.cm.)
+
+
+
+DADOS_N <- read.csv("atividade1_MARINA.csv",header=FALSE, sep=";")
+DADOS_N <- DADOS_N[-1,]
+DADOS_N_R <- data.frame(ETIQUETA = NA, AMOSTRA = DADOS_N$V2,
+                        SITE = DADOS_N$V3,
+                        LATITUDE = DADOS_N$V4, LONGITUDE = DADOS_N$V5,
+                        DATA = DADOS_N$V6, ESP = DADOS_N$V7,
+                        SEP_L = DADOS_N$V8, SEP_W = DADOS_N$V9, 
+                        PET_L = DADOS_N$V10, PET_W = DADOS_N$V11)
+
+
+
+DADOS_V <- read.csv("atividade1_Vitor_Figueira_Arueira.csv",header=TRUE, sep=";")
+
+
+
+
+### JUNTANDO TUDO
+DADOS <- rbind(DADOS_V, DADOS_H_R, DADOS_J_R, DADOS_L_R, DADOS_M_R, DADOS_N_R)
+DADOS <- DADOS[, -1]
+
+
+### PADRONIZANDO VARIAVEIS
+
+DADOS$ESP <- str_replace(DADOS$ESP, "iris_versicolor", "IRIS_VERSICOLOR")
+DADOS$ESP <- str_replace(DADOS$ESP, "Iris_versicolor", "IRIS_VERSICOLOR")
+DADOS$ESP <- str_replace(DADOS$ESP, "Iris versicolor", "IRIS_VERSICOLOR")
+DADOS$ESP <- str_replace(DADOS$ESP, "iris_virginica", "IRIS_VIRGINICA")
+DADOS$ESP <- str_replace(DADOS$ESP, "Iris_virginica", "IRIS_VIRGINICA")
+DADOS$ESP <- str_replace(DADOS$ESP, "Iris virginica", "IRIS_VIRGINICA")
+DADOS$ESP <- str_replace(DADOS$ESP, "iris_setosa", "IRIS_SETOSA")
+DADOS$ESP <- str_replace(DADOS$ESP, "Iris_setosa", "IRIS_SETOSA")
+DADOS$ESP <- str_replace(DADOS$ESP, "Iris setosa", "IRIS_SETOSA")
+
+
+
+DADOS$DATA <- str_replace(DADOS$DATA, "01/12/1929", "01_12_1929")
+DADOS$DATA <- str_replace(DADOS$DATA, "13/02/1930", "13_02_1930")
+DADOS$DATA <- str_replace(DADOS$DATA, "1929_12_01", "01_12_1929")
+DADOS$DATA <- str_replace(DADOS$DATA, "1930_02_13", "13_02_1930")
+DADOS$DATA <- str_replace(DADOS$DATA, "1930_02_13", "13_02_1930")
+DADOS$DATA <- str_replace(DADOS$DATA, "02/12/1929", "12_02_1929")
+DADOS$DATA <- str_replace(DADOS$DATA, "15/02/1930", "15_02_1930")
+DADOS$DATA <- str_replace(DADOS$DATA, "03/12/1929", "03_12_1929")
+DADOS$DATA <- str_replace(DADOS$DATA, "14/02/1930", "14_02_1930")
+DADOS$DATA <- str_replace(DADOS$DATA, "04/12/1929", "04_12_1929")
+DADOS$DATA <- str_replace(DADOS$DATA, "05/12/1929", "05_12_1929")
+DADOS$DATA <- str_replace(DADOS$DATA, "1929-12-01", "01_12_1929")
+DADOS$DATA <- str_replace(DADOS$DATA, "1930-02-13", "13_02_1930")
+
+DADOS$DATA <- dmy(DADOS$DATA)
+is.Date(DADOS$DATA) 
+
+
+DADOS$SITE <- str_replace(DADOS$SITE, "Site1", "S1")
+DADOS$SITE <- str_replace(DADOS$SITE, "Site2", "S2")
+DADOS$SITE <- str_replace(DADOS$SITE, "Site3", "S3")
+DADOS$SITE <- str_replace(DADOS$SITE, "site3", "S3")
+DADOS$SITE <- str_replace(DADOS$SITE, "ste2", "S2")
+DADOS$SITE <- str_replace(DADOS$SITE, "site1", "S1")
+DADOS$SITE <- str_replace(DADOS$SITE, "site2", "S2")
+
+
+
+
+
+
+
+
+### EXPORTANDO CSV
+
+write.csv(DADOS, "DADOS.csv")
+ 
+
+
