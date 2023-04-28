@@ -1,6 +1,6 @@
 ---
-title: "Atividade final - Procurando ambos"
-author: "Vitor Figueira Arueira"
+title: <div align="center">Atividade final - Procurando ambos
+author: <div align="center">Vitor Figueira Arueira
 output: html_document
 ---
 ---
