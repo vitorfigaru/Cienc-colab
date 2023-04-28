@@ -1,0 +1,548 @@
+---
+title: "Atividade final - Procurando ambos"
+author: "Vitor Figueira Arueira"
+output: html_document
+---
+---
+title: <div align="center">**Atividade 3 - Procurando o Nemo**
+author: <div align="center"> Vitor Figueira Arueira
+output: html_document
+---
+
+## Introdução
+
+Nós vimos onde as espécies *Amphiprion ocellaris* (Nemo) e *Paracanthurus hepatus* (Dori) se distribuem ao redor do globo. Mas será que suas distibuições se sobrepõe? Os filmes são didáticos nesse sentido ao apenas utilizam de espécies carismáticas para agregar público e espalham desinformação? Vamos descobrir!
+
+## Nemo
+
+### Carregando pacotes
+
+```{r pacotes}
+library(tidyverse)
+library(rgbif)
+library(robis)
+library(dplyr)
+library(bdc)
+library(CoordinateCleaner)
+library(ggmap)
+library(maps)
+library(mapdata)
+```
+
+## GBIF
+
+### Baixando dados da plataforma GBIF
+
+```{r}
+# baixar ocorrencias
+nemo_gbif <- occ_data(scientificName = "Amphiprion ocellaris", 
+                      hasCoordinate = TRUE,
+                      hasGeospatialIssue=FALSE)
+```
+
+#### Checando dados obtidos
+
+```{r}
+
+# dimensoes
+dim(nemo_gbif)
+
+
+dim(nemo_gbif$data)
+
+# checar campos
+nemo_gbif$data %>% names
+
+
+gbif_issues()
+```
+
+### Checando problemas por partes
+
+```{r}
+# checar problemas reportados
+issues_gbif <- nemo_gbif$data$issues %>% 
+  unique() %>% 
+  strsplit(., "[,]") %>% 
+  unlist()
+
+gbif_issues() %>% 
+  data.frame() %>% 
+  filter(code %in% issues_gbif)
+```
+
+### Selecionando variáveis importantes
+
+```{r}
+nemo_gbif1 <- nemo_gbif$data %>%
+  dplyr::select(scientificName, acceptedScientificName, decimalLatitude, decimalLongitude,
+                issues, basisOfRecord, waterBody, occurrenceStatus, rightsHolder, 
+                datasetName, recordedBy, locality) 
+```
+
+### Checando ocorrências e valores únicos
+
+```{r}
+nemo_gbif1 <- nemo_gbif1 %>% 
+  distinct() 
+
+# checar niveis dos fatores
+lapply(nemo_gbif1, unique)
+```
+
+### Checando problemas não reportados automaticamente pelo algorítimo do banco de dados
+
+```{r}
+# checar coordenadas válidas
+check_pf <- 
+  bdc::bdc_coordinates_outOfRange(
+    data = nemo_gbif1,
+    lat = "decimalLatitude",
+    lon = "decimalLongitude")
+
+# Coordenadas próximas a capitais
+cl <- nemo_gbif1 %>%
+  select(acceptedScientificName, decimalLatitude, decimalLongitude) %>%
+  rename(decimallongitude = decimalLongitude,
+         decimallatitude = decimalLatitude,
+         scientificName = acceptedScientificName) %>% 
+  as_tibble() %>% 
+  mutate(val = cc_val(., value = "flagged"),
+         sea = cc_sea(., value = "flagged"),
+         capital = cc_cap(., value = "flagged"))
+```
+
+### Checando no mapa se está tudo OK
+
+```{r}
+# Capitais
+cl %>% 
+  rename(decimalLongitude = decimallongitude,
+         decimalLatitude = decimallatitude) %>% 
+  bdc::bdc_quickmap(., col_to_map = "capital")  
+
+# Mares
+cl %>% 
+  rename(decimalLongitude = decimallongitude,
+         decimalLatitude = decimallatitude) %>% 
+  bdc::bdc_quickmap(., col_to_map = "sea")
+```
+
+### Investigando níveis suspeitos
+
+```{r}
+nemo_gbif1 %>% 
+  distinct(waterBody) %>% 
+  pull()
+```
+
+### Conferindo onde estão situadas as ocorrências
+
+```{r}
+nemo_gbif1 %>%
+  group_by(waterBody) %>% 
+  summarise(occ = length(scientificName)) %>% 
+  ggplot(aes(occ, y=waterBody)) +
+  geom_bar(stat = 'identity') 
+```
+
+Nota: não foi possível realizar a conferência com profundidade para esta espécie, também não foi necessárias exclusões pois a região geográfica foi condizente.
+
+### Mapa final de registros
+
+```{echo=FALSE}
+# checar pontos
+world <- map_data('world')
+
+ggplot() +
+  geom_polygon(data = world, aes(x = long, y = lat, group = group)) +
+  coord_fixed() +
+  theme_classic() +
+  geom_point(data = nemo_gbif, aes(x = decimalLongitude, y = decimalLatitude),
+             color = "red") +
+  labs(x = "longitude", y = "latitude", title = expression(italic("Amphiprion ocellaris")))
+```
+
+![](pontos1)
+
+## OBIS
+
+### Carregando dados OBIS
+
+```{r}
+nemo_obis <- robis::occurrence("Amphiprion ocellaris")
+```
+
+### checando dados
+
+```{r}
+# checar dados
+names(nemo_obis)
+
+
+nemo_obis1 <- nemo_obis %>% 
+  dplyr::select(scientificName, decimalLatitude, decimalLongitude, bathymetry,
+                flags, waterBody, basisOfRecord, occurrenceStatus, rightsHolder, 
+                datasetName, recordedBy, locality, habitat) %>% 
+  distinct()
+
+# check problemas reportados (flags)
+nemo_obis1 %>% 
+  distinct(flags)
+
+
+# check NA em datasetName
+nemo_obis1 %>% 
+  filter(!flags %in% c("no_depth,on_land", "on_land",
+                       "on_land,depth_exceeds_bath", "depth_exceeds_bath,on_land"),
+         is.na(datasetName)) %>% 
+  distinct(waterBody)
+# checar niveis
+nemo_obis1 %>% 
+  filter(!flags %in% c("no_depth,on_land", "on_land",
+                       "on_land,depth_exceeds_bath", "depth_exceeds_bath,on_land"),
+         !is.na(datasetName),
+         !waterBody %in% c("North America", "North America Atlantic", "atlantique")) %>% 
+  lapply(., unique)
+# ok
+nemo_obis_ok <- nemo_obis1 %>% 
+  filter(!flags %in% c("no_depth,on_land", "on_land",
+                       "on_land,depth_exceeds_bath", "depth_exceeds_bath,on_land"),
+         !is.na(datasetName),
+         !waterBody %in% c("North America", "North America Atlantic", "atlantique", NA)) 
+
+```
+
+### Plotando mapa para verificar ocorrências
+
+```{plot}
+ggplot() +   
+  geom_polygon(data = world, aes(x = long, y = lat, group = group)) +
+  coord_fixed() +   theme_classic() +
+  geom_point(data = nemo_obis_ok, aes(x = decimalLongitude, 
+                                      y = decimalLatitude, color = waterBody)) +
+  labs(x = "longitude", y = "latitude", title = expression(italic("Amphiprion ocellaris")))
+```
+![](ponto2)
+
+### Juntando dados de ambos os bancos (GBIF e OBIS)
+
+```{junt}
+setdiff(names(nemo_gbif), names(nemo_obis))
+
+setdiff(names(nemo_obis), names(nemo_gbif))
+
+
+
+all_data1 <- bind_rows(nemo_gbif %>% 
+                        mutate(repo = paste0("gbif", row.names(.))), 
+                      nemo_obis_ok %>% 
+                        mutate(repo = paste0("obis", row.names(.)))) %>%
+  column_to_rownames("repo") %>% 
+  dplyr::select(decimalLongitude, decimalLatitude) %>% 
+  distinct() %>% 
+  rownames_to_column("occ") %>% 
+  separate(col = "occ", into = c("datasetName", "rn"), sep = 4) %>%
+  mutate(scientificName = "Amphiprion ocellaris") %>% 
+  dplyr::select(-rn)
+```
+
+### Plot final
+
+```{map}
+ggplot() +
+  geom_polygon(data = world, aes(x = long, y = lat, group = group)) +
+  coord_fixed() +
+  theme_classic() +
+  geom_point(data = all_data1, aes(x = decimalLongitude,
+                                  y = decimalLatitude, color = datasetName)) +
+  #theme(legend.title = element_blank()) +
+  labs(x = "longitude", y = "latitude", title = expression(italic("Amphiprion ocellaris")))
+```
+![](ponto3)
+
+
+### Criando arquivo com dados em conjunto
+
+```{csv}
+write.csv(all_data1, "occ_GBIF-OBIS_par_Amp.csv", row.names = FALSE)
+```
+
+
+## Dori
+
+## GBIF
+
+### Baixando dados da plataforma GBIF
+
+```{r}
+# baixar ocorrencias
+dori_gbif <- occ_data(scientificName = "Amphiprion ocellaris", 
+                      hasCoordinate = TRUE,
+                      hasGeospatialIssue=FALSE)
+```
+
+#### Checando dados obtidos
+
+```{r}
+
+# dimensoes
+dim(dori_gbif)
+
+
+dim(dori_gbif$data)
+
+# checar campos
+dori_gbif$data %>% names
+
+
+gbif_issues()
+```
+
+### Checando problemas por partes
+
+```{r}
+# checar problemas reportados
+issues_gbif <- dori_gbif$data$issues %>% 
+  unique() %>% 
+  strsplit(., "[,]") %>% 
+  unlist()
+
+gbif_issues() %>% 
+  data.frame() %>% 
+  filter(code %in% issues_gbif)
+```
+
+### Selecionando variáveis importantes
+
+```{r}
+dori_gbif1 <- dori_gbif$data %>%
+  dplyr::select(scientificName, acceptedScientificName, decimalLatitude, decimalLongitude,
+                issues, basisOfRecord, waterBody, occurrenceStatus, rightsHolder, 
+                datasetName, recordedBy, locality) 
+```
+
+### Checando ocorrências e valores únicos
+
+```{r}
+dori_gbif1 <- dori_gbif1 %>% 
+  distinct() 
+
+# checar niveis dos fatores
+lapply(dori_gbif1, unique)
+```
+
+### Checando problemas não reportados automaticamente pelo algorítimo do banco de dados
+
+```{r}
+# checar coordenadas válidas
+check_pf <- 
+  bdc::bdc_coordinates_outOfRange(
+    data = dori_gbif1,
+    lat = "decimalLatitude",
+    lon = "decimalLongitude")
+
+# Coordenadas próximas a capitais
+cl <- dori_gbif1 %>%
+  select(acceptedScientificName, decimalLatitude, decimalLongitude) %>%
+  rename(decimallongitude = decimalLongitude,
+         decimallatitude = decimalLatitude,
+         scientificName = acceptedScientificName) %>% 
+  as_tibble() %>% 
+  mutate(val = cc_val(., value = "flagged"),
+         sea = cc_sea(., value = "flagged"),
+         capital = cc_cap(., value = "flagged"))
+```
+
+### Checando no mapa se está tudo OK
+
+```{r}
+# Capitais
+cl %>% 
+  rename(decimalLongitude = decimallongitude,
+         decimalLatitude = decimallatitude) %>% 
+  bdc::bdc_quickmap(., col_to_map = "capital")  
+
+# Mares
+cl %>% 
+  rename(decimalLongitude = decimallongitude,
+         decimalLatitude = decimallatitude) %>% 
+  bdc::bdc_quickmap(., col_to_map = "sea")
+```
+
+### Investigando níveis suspeitos
+
+```{r}
+dori_gbif1 %>% 
+  distinct(waterBody) %>% 
+  pull()
+```
+
+### Conferindo onde estão situadas as ocorrências
+
+```{r}
+dori_gbif1 %>%
+  group_by(waterBody) %>% 
+  summarise(occ = length(scientificName)) %>% 
+  ggplot(aes(occ, y=waterBody)) +
+  geom_bar(stat = 'identity') 
+```
+
+Nota: não foi possível realizar a conferência com profundidade para esta espécie, também não foi necessárias exclusões pois a região geográfica foi condizente.
+
+### Mapa final de registros
+
+```{pontos, echo=FALSE}
+# checar pontos
+world <- map_data('world')
+
+ggplot() +
+  geom_polygon(data = world, aes(x = long, y = lat, group = group)) +
+  coord_fixed() +
+  theme_classic() +
+  geom_point(data = dori_gbif, aes(x = decimalLongitude, y = decimalLatitude),
+             color = "red") +
+  labs(x = "longitude", y = "latitude", title = expression(italic("Amphiprion ocellaris")))
+```
+
+![](p1)
+
+## OBIS
+
+### Carregando dados OBIS
+
+```{r}
+dori_obis <- robis::occurrence("Amphiprion ocellaris")
+```
+
+### checando dados
+
+```{r}
+# checar dados
+names(dori_obis)
+
+
+dori_obis1 <- dori_obis %>% 
+  dplyr::select(scientificName, decimalLatitude, decimalLongitude, bathymetry,
+                flags, waterBody, basisOfRecord, occurrenceStatus, rightsHolder, 
+                datasetName, recordedBy, locality, habitat) %>% 
+  distinct()
+
+# check problemas reportados (flags)
+dori_obis1 %>% 
+  distinct(flags)
+
+
+# check NA em datasetName
+dori_obis1 %>% 
+  filter(!flags %in% c("no_depth,on_land", "on_land",
+                       "on_land,depth_exceeds_bath", "depth_exceeds_bath,on_land"),
+         is.na(datasetName)) %>% 
+  distinct(waterBody)
+# checar niveis
+dori_obis1 %>% 
+  filter(!flags %in% c("no_depth,on_land", "on_land",
+                       "on_land,depth_exceeds_bath", "depth_exceeds_bath,on_land"),
+         !is.na(datasetName),
+         !waterBody %in% c("North America", "North America Atlantic", "atlantique")) %>% 
+  lapply(., unique)
+# ok
+dori_obis_ok <- dori_obis1 %>% 
+  filter(!flags %in% c("no_depth,on_land", "on_land",
+                       "on_land,depth_exceeds_bath", "depth_exceeds_bath,on_land"),
+         !is.na(datasetName),
+         !waterBody %in% c("North America", "North America Atlantic", "atlantique", NA)) 
+
+```
+
+### Plotando mapa para verificar ocorrências
+
+```{plot map obis}
+ggplot() +   
+  geom_polygon(data = world, aes(x = long, y = lat, group = group)) +
+  coord_fixed() +   theme_classic() +
+  geom_point(data = dori_obis_ok, aes(x = decimalLongitude, 
+                                      y = decimalLatitude, color = waterBody)) +
+  labs(x = "longitude", y = "latitude", title = expression(italic("Amphiprion ocellaris")))
+```
+![](p2)
+
+### Juntando dados de ambos os bancos (GBIF e OBIS)
+
+```{junt data}
+setdiff(names(dori_gbif), names(dori_obis))
+
+setdiff(names(dori_obis), names(dori_gbif))
+
+
+
+all_data <- bind_rows(dori_gbif %>% 
+                        mutate(repo = paste0("gbif", row.names(.))), 
+                      dori_obis_ok %>% 
+                        mutate(repo = paste0("obis", row.names(.)))) %>%
+  column_to_rownames("repo") %>% 
+  dplyr::select(decimalLongitude, decimalLatitude) %>% 
+  distinct() %>% 
+  rownames_to_column("occ") %>% 
+  separate(col = "occ", into = c("datasetName", "rn"), sep = 4) %>%
+  mutate(scientificName = "Amphiprion ocellaris") %>% 
+  dplyr::select(-rn)
+```
+
+### Plot final
+
+```{map fin}
+ggplot() +
+  geom_polygon(data = world, aes(x = long, y = lat, group = group)) +
+  coord_fixed() +
+  theme_classic() +
+  geom_point(data = all_data, aes(x = decimalLongitude,
+                                  y = decimalLatitude, color = datasetName)) +
+  #theme(legend.title = element_blank()) +
+  labs(x = "longitude", y = "latitude", title = expression(italic("Amphiprion ocellaris")))
+```
+![](p3)
+
+
+### Criando arquivo com dados em conjunto
+
+```{csv arq}
+write.csv(all_data, "occ_GBIF-OBIS_par_hepa.csv", row.names = FALSE)
+```
+
+
+## Nemo e Dori juntos?
+
+```{juntos}
+### Nemo e Dori
+
+all_data2 <- bind_rows(all_data1 %>% 
+                        mutate(repo = paste0("Nemo", row.names(.))), 
+                      all_data %>% 
+                        mutate(repo = paste0("Dori", row.names(.)))) %>%
+  column_to_rownames("repo") %>% 
+  dplyr::select(decimalLongitude, decimalLatitude, depth) %>% 
+  distinct() %>% 
+  rownames_to_column("occ") %>% 
+  separate(col = "occ", into = c("datasetName", "rn"), sep = 4) %>%
+  mutate(scientificName = "") %>% 
+  dplyr::select(-rn)
+
+
+# mapear ocorrencias
+ggplot() +
+  geom_polygon(data = world, aes(x = long, y = lat, group = group)) +
+  coord_fixed() +
+  theme_classic() +
+  geom_point(data = all_data2, aes(x = decimalLongitude,
+                                  y = decimalLatitude, color = datasetName)) +
+  scale_color_manual(values=c("blue", "red"))+
+  theme(legend.title = element_blank()) +
+  labs(x = "longitude", y = "latitude", title = expression("Procurando ambos"))
+```
+![](PF)
+
+
+## Conclusão
+ Bem, se tratando da região Indo-Pacífica, ambas tem ocorrências regionais similares, mas a Dori parece ter se perdido um pouco pelo mundo.
+ 
