@@ -1,8 +1,29 @@
 ---
-title: <div align="center">"index"
-author: "Vitor Figueira Arueira"
+title: <div align="center">Atividades Disciplina Ciência Colaborativa
+author: <div align="center">Vitor Figueira Arueira
 output: html_document
 ---
 
-### [Atividade 1](https://github.com/vitorfigaru/Cienc-colab/blob/main/Atividade-1.html) 
+### Atividade 1
 
+#### [html](https://github.com/vitorfigaru/Cienc-colab/blob/main/Atividade-1.html) 
+
+#### [Rmd](https://github.com/vitorfigaru/Cienc-colab/blob/main/Atividade%201.Rmd)
+
+#### [script](https://github.com/vitorfigaru/Cienc-colab/blob/main/atv1.R)
+
+### Atividade 2
+
+#### [html](https://github.com/vitorfigaru/Cienc-colab/blob/main/Atividade-2.html) 
+
+#### [Rmd](https://github.com/vitorfigaru/Cienc-colab/blob/main/Atividade%202.Rmd)
+
+#### [script](https://github.com/vitorfigaru/Cienc-colab/blob/main/atv2.R)
+
+### Atividade 3
+
+#### [html](https://github.com/vitorfigaru/Cienc-colab/blob/main/Atividade-3.html) 
+
+#### [Rmd](https://github.com/vitorfigaru/Cienc-colab/blob/main/Atividade%203.Rmd)
+
+#### [script](https://github.com/vitorfigaru/Cienc-colab/blob/main/atv3.R)
