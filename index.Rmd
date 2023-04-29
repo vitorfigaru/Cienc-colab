@@ -6,11 +6,11 @@ output: html_document
 
 ### Atividade 1
 
-#### [html](https://github.com/vitorfigaru/Cienc-colab/blob/main/Atividade-1.html) 
+#### [html](https://vitorfigaru.github.io/Cienc-colab/Atividade-1.html) 
 
-#### [Rmd](https://github.com/vitorfigaru/Cienc-colab/blob/main/Atividade%201.Rmd)
+#### [Rmd](https://vitorfigaru.github.io/Cienc-colab/Atividade%201.Rmd)
 
-#### [script](https://github.com/vitorfigaru/Cienc-colab/blob/main/atv1.R)
+#### [script](https://vitorfigaru.github.io/Cienc-colab/atv1.R)
 
 ### Atividade 2
 
