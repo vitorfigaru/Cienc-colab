@@ -4,11 +4,11 @@ author: <div align="center">Vitor Figueira Arueira
 output: html_document
 ---
 
+##### Observação: Os arquivos .Rmd podem ser encontrados na página principal do repositório [neste link](https://github.com/vitorfigaru/Cienc-colab), visto que arquivos .Rmd não são suportados para abrir na web. Os links para os scripts baixam automáticamente cada um, mas os mesmos se encontram inseridos com anotações nos documentos html.
+
 ### Atividade 1
 
 #### [html](https://vitorfigaru.github.io/Cienc-colab/Atividade-1.html) 
-
-#### [Rmd](https://vitorfigaru.github.io/Cienc-colab/Atividade%201.Rmd)
 
 #### [script](https://vitorfigaru.github.io/Cienc-colab/atv1.R)
 
@@ -16,23 +16,17 @@ output: html_document
 
 #### [html](https://vitorfigaru.github.io/Cienc-colab/Atividade-2.html) 
 
-#### [Rmd](https://vitorfigaru.github.io/Cienc-colab/Atividade%202.Rmd)
-
 #### [script](https://vitorfigaru.github.io/Cienc-colab/atv2.R)
 
 ### Atividade 3
 
 #### [html](https://vitorfigaru.github.io/Cienc-colab/Atividade-3.html) 
 
-#### [Rmd](https://vitorfigaru.github.io/Cienc-colab/Atividade%203.Rmd)
-
 #### [script](https://vitorfigaru.github.io/Cienc-colab/atv3.R)
 
 ### Atividade Final
 
 #### [html](https://vitorfigaru.github.io/Cienc-colab/Atividade-final.html) 
-
-#### [Rmd](https://vitorfigaru.github.io/Cienc-colab/Atividade%20final.Rmd)
 
 #### [script](https://vitorfigaru.github.io/Cienc-colab/atv.final.R)
 
