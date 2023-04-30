@@ -1,13 +1,9 @@
 ---
-title: <div align="center">Atividade final - Procurando ambos
+title: <div align="center">**Atividade final - Procurando ambos**
 author: <div align="center">Vitor Figueira Arueira
 output: html_document
 ---
----
-title: <div align="center">**Atividade 3 - Procurando o Nemo**
-author: <div align="center"> Vitor Figueira Arueira
-output: html_document
----
+
 
 ## Introdução
 
